@@ -239,7 +239,7 @@
           <div class="form-group">
             <label class="control-label col-md-2">是否发布</label>
             <div class="col-md-7">
-              <button onclick="doSubmit()" class="btn btn-primary" type="submit">发布</button><button class="btn btn-default-outline">取消</button>
+              <button onclick="upload()" class="btn btn-primary" type="submit">发布</button><button class="btn btn-default-outline">取消</button>
             </div>
           </div>
         </form>
@@ -256,17 +256,24 @@
       </div>
 
       <div class="widget-content padded">
-        <form action="#" class="form-horizontal">
+        <form onsubmit="return false" class="form-horizontal" enctype="multipart/form-data" method="post">
           <div class="form-group">
             <label class="control-label col-md-2">预览</label>
             <div class="col-md-4">
               <div class="fileupload fileupload-new" data-provides="fileupload">
                 <div class="fileupload-new img-thumbnail" style="width: 200px; height: 150px;">
                   <img src="http://www.placehold.it/200x150/EFEFEF/AAAAAA&amp;text=no+image">
+
                 </div>
                 <div class="fileupload-preview fileupload-exists img-thumbnail" style="width: 200px; max-height: 150px"></div>
                 <div>
-                  <span class="btn btn-default btn-file"><span class="fileupload-new">选择图片</span><span class="fileupload-exists">更改</span><input type="file"></span><a class="btn btn-default fileupload-exists" data-dismiss="fileupload" href="#">移除</a>
+                  <span class="btn btn-default btn-file">
+                      <span class="fileupload-new">选择图片</span>
+                      <span class="fileupload-exists">更改</span>
+                      <input type="file" name="uploadImg" id="uploadimg">
+                  </span>
+                    <a class="btn btn-default fileupload-exists" data-dismiss="fileupload" href="#">移除</a>
+                  <!--  <input type="submit" value="提交" onclick="upload()" >  -->
                 </div>
               </div>
             </div>
@@ -283,11 +290,13 @@
   </body>
 
 <script>
-    function doSubmit(){
+    function doSubmit(filename){
         //alert("11");
         $.post("/publish",{
             "artiname":$("#artiname").val(),
-            "content":$("#content").val()
+            "content":$("#content").val(),
+
+            "imgname":filename
         },function(resultData,statu){
             if(resultData=="failed"){
                 alert("文章创建失败！");
@@ -299,6 +308,65 @@
 
     }
 
+    function upload(){
+        //alert("11");
+        var formData=new FormData();
+        //formData.append("csrfmiddlewaretoken",csrf);
+        formData.append('uploadImg', $("#uploadimg")[0].files[0]);  /*获取上传的图片对象*/
+
+       // alert($('#uploadimg').val().length==0);
+      //  return;
+
+        if($('#uploadimg').val().length==0){
+            if(!confirm("未选择文件，是否确认创建文章？")){
+                return;
+            }else{
+                doSubmit("");
+                return;
+            }
+        }
+
+
+        var filename="";
+        $.ajax({
+            url: '/upload',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (args) {
+               //alert(args);  /*服务器端的图片地址*/
+                if(args == "failed"){
+                   // alert("失败")
+                    if(!confirm("文件上传失败，是否继续创建文章？")){
+                        return;
+                    }
+                }
+                filename=args;
+                doSubmit(filename);
+
+
+                // $("#avatarPreview").attr('src','/'+args);  /*预览图片*/
+                // $("#avatar").val('/'+args);  /*将服务端的图片url赋值给form表单的隐藏input标签*/
+            }});
+
+
+        // $.post("/upload",{
+        //     formData
+        // },function(resultData,statu) {
+        //     if (resultData == "failed") {
+        //         alert("图片上传失败！");
+        //     }//else if(resultData=="success"){
+        //     //     alert("创建成功");
+        //     //window.location.href="/publish";
+        // //  }
+        //     else {
+        //         alert(resultData)
+        //     }
+        // })
+
+    }
 </script>
+
 
 </html>

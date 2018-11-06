@@ -19,6 +19,7 @@ type Article struct {
 	PubTime string //`orm:"auto_now_add;type(datetime)"`
 	Img string
 	Count int
+	Classify string
 }
 
 func init()  {
@@ -66,17 +67,33 @@ func RegisterUser(name string, pwd string) (ret int, err error) {
 }
 
 //创建文章
-func CreatArticle(artiname string, content string, timer time.Time) (ret int, err error) {
+func CreatArticle(artiname string, content string, timer time.Time, img string) (ret int, err error) {
 	o := orm.NewOrm()
 	arti :=  Article{}
 
 	arti.ArtiName = artiname
 	arti.Content = content
 	arti.PubTime = timer.Format("2006-01-02 15:04:05")
+	arti.Img = img
 
 	_, err = o.Insert(&arti)
 	if err != nil {
 		return 0, err
 	}
 	return 1, err
+}
+
+//删除文章
+func DeleteArticle(id int) (err error) {
+	o := orm.NewOrm()
+	arti := Article{Id:id}
+	err = o.Read(&arti)
+	if err != nil {
+		return err
+	}
+	_, err = o.Delete(&arti)
+	if err != nil {
+		return err
+	}
+	return err
 }
