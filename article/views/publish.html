@@ -221,11 +221,12 @@
          <div class="form-group">
             <label class="control-label col-md-2">分类</label>
             <div class="col-md-7">
-              <select class="form-control">
-                  <option value="Category 1">选项 1</option>
-                  <option value="Category 2">选项 2</option>
-                  <option value="Category 3">选项 3</option>
-                  <option value="Category 4">选项 4</option>
+              <select class="form-control"  id="typeName">
+
+              {{range .ArtiType}}
+                  <option value="{{.Id}}">{{.TypeName}}</option>
+              {{end}}
+
               </select>
             </div>
           </div>
@@ -291,10 +292,11 @@
 
 <script>
     function doSubmit(filename){
-        //alert("11");
+        // alert($("#typeName  option:selected").val());
         $.post("/publish",{
             "artiname":$("#artiname").val(),
             "content":$("#content").val(),
+            "typeId":$("#typeName  option:selected").val(),
 
             "imgname":filename
         },function(resultData,statu){
@@ -309,13 +311,9 @@
     }
 
     function upload(){
-        //alert("11");
         var formData=new FormData();
         //formData.append("csrfmiddlewaretoken",csrf);
         formData.append('uploadImg', $("#uploadimg")[0].files[0]);  /*获取上传的图片对象*/
-
-       // alert($('#uploadimg').val().length==0);
-      //  return;
 
         if($('#uploadimg').val().length==0){
             if(!confirm("未选择文件，是否确认创建文章？")){
@@ -325,7 +323,6 @@
                 return;
             }
         }
-
 
         var filename="";
         $.ajax({
@@ -345,26 +342,9 @@
                 filename=args;
                 doSubmit(filename);
 
-
                 // $("#avatarPreview").attr('src','/'+args);  /*预览图片*/
                 // $("#avatar").val('/'+args);  /*将服务端的图片url赋值给form表单的隐藏input标签*/
             }});
-
-
-        // $.post("/upload",{
-        //     formData
-        // },function(resultData,statu) {
-        //     if (resultData == "failed") {
-        //         alert("图片上传失败！");
-        //     }//else if(resultData=="success"){
-        //     //     alert("创建成功");
-        //     //window.location.href="/publish";
-        // //  }
-        //     else {
-        //         alert(resultData)
-        //     }
-        // })
-
     }
 </script>
 

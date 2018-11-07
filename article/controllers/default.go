@@ -78,7 +78,7 @@ func (c *MainController) Index() {
 	//1、查询
 	o := orm.NewOrm()
 	var articles []models.Article
-	qs := o.QueryTable("Article")
+	qs := o.QueryTable("Article").RelatedSel("ArticleType")//关联ArticleType数据库，可以在多处添加RelatedSel
 	//qs.All(&articles)//select * from article
 
 	count, err := qs.Count() //查询条目数
@@ -87,7 +87,7 @@ func (c *MainController) Index() {
 	/*
 	pageIndex可以通过在前端使用/url?pageIndex=xxx的方式向后端传递
 	后端的接受则使用pageIndex := c.GetString("pageIndex")获取
-	将pageIndex转成整型，pageIndex, err := Strconv.Atoi(pageIndex)//首页的显示：if err != nil {pageIndex}
+	将pageIndex转成整型，pageIndex, err := Strconv.Atoi(pageIndex)//首页的显示：if err != nil {pageIndex = 1}
 	上行的pageIndex在上上一行已经使用，这里只是作为提醒，与下行代码匹配
 	*/
 	pageIndex := 1//首页,由于前端的模板中暂时无法找到对应的首页（或上一页、下一页和末页）标签，故此处先使用1作为首页
@@ -112,9 +112,14 @@ func (c *MainController) Index() {
 
 //显示文章创建页
 func (c *MainController) ShowPublish() {
+	artiType, err := models.GetArtiType()
+	if err != nil {
+		beego.Info("类型查找失败！", err)
+		return
+	}
+	c.Data["ArtiType"] = artiType
 	c.TplName = "publish.html"
 }
-
 //创建文章操作
 func (c *MainController) Publish() {
 	artiname := c.GetString("artiname")
@@ -122,16 +127,26 @@ func (c *MainController) Publish() {
 	imgname := c.GetString("imgname")
 	timer := time.Now()
 
+	typeId, err := c.GetInt("typeId")
+	beego.Info("TypeId:", typeId)
+	if err != nil {
+		beego.Info("下拉类型获取失败!")
+		return
+	}
+	var artiType models.ArticleType
+	artiType.Id = typeId
+
 	if artiname == "" || content == "" {
 		beego.Info("非法输入！")
 		return
 	}
-	resp, err := models.CreatArticle(artiname, content, timer, imgname)
+	resp, err := models.CreatArticle(artiname, content, timer, imgname, artiType)
 	if err != nil || resp == 0 {
-		beego.Info("文章创建失败！")
+		beego.Info("文章创建失败！", err)
 		c.Ctx.WriteString("failed")
 		return
 	}
+
 	c.Ctx.WriteString("success")
 }
 
@@ -172,6 +187,12 @@ func (c *MainController) Upload() {
 
 //文章内容详情
 func (c *MainController) ShowContent() {
+	artiType, err := models.GetArtiType()
+	if err != nil {
+		beego.Info("类型查找失败！", err)
+		return
+	}
+	c.Data["artiType"] = artiType
 	c.TplName = "content.html"
 }
 
@@ -187,5 +208,5 @@ func (c *MainController) Delete() {
 		beego.Info("文章删除失败", err)
 		return
 	}
-	beego.Info("文章删除删除成功！")
+	beego.Info("文章删除成功！")
 }
