@@ -177,7 +177,7 @@
                   <li><a href="#">
                     <i class="icon-gear"></i>设置</a>
                   </li>
-                  <li><a href="/">
+                  <li><a href="/exit">
                     <i class="icon-signout"></i>退出</a>
                   </li>
                 </ul>
@@ -237,7 +237,7 @@
                         <label><input name="optionsRadios1" type="checkbox" value="option1"><span></span></label>
                       </td>
                       <td>
-                        <a href="/content?id={{.Id}}">{{.ArtiName}}</a>
+                        <a href="/content?cid={{.Id}}" target="_blank">{{.ArtiName}}</a>
                       </td>
                         <td>
                             {{.ArticleType.TypeName}}
@@ -280,7 +280,7 @@
         //         return false;
         //     }
         // }) /delete?id={{.Id}}
-    }
+    };
 
     function del(a) {
         var value=a.previousElementSibling.value;

@@ -15,6 +15,16 @@ type MainController struct {
 
 //显示登录界面
 func (c *MainController) ShowLogin() {
+	//cookie的处理
+	username := c.Ctx.GetCookie("username")//获得cookie值
+	password := c.Ctx.GetCookie("password")
+	if username != "" && password != "" {
+		c.Data["username"] = username
+		c.Data["password"] = password
+		c.Data["check"] = "checked"
+	}else {
+		c.Data["check"] = "check"
+	}
 	c.TplName = "login.html"
 }
 //登录操作
@@ -39,6 +49,19 @@ func (c *MainController) Login() {
 		return
 	}
 	beego.Info("登录成功")
+	//cookie的处理
+	c.Ctx.SetCookie("username", username, 3600*time.Second)//设置cookie值，一小时后失效
+	remember := c.GetString("remember")
+	beego.Info("remember-->", remember)
+	if remember == "on" {
+		c.Ctx.SetCookie("password", pwd, 3600*time.Second)
+	}else {
+		c.Ctx.SetCookie("password", "123", -1)//设置负值可以删除cookie，此时第二个参数无效，可以随便填
+	}
+
+	//session的处理
+	c.SetSession("username", username)//设置session
+
 	c.Ctx.WriteString("success")
 	//c.Ctx.Redirect(302, "/index")
 }
@@ -74,7 +97,13 @@ func (c *MainController) Register() {
 
 //显示主页
 func (c *MainController) Index() {
-	//显示文章标题、浏览量、创建时间到index.html中
+	//session处理
+	userName := c.GetSession("username")
+	if userName == nil {
+		c.Redirect("/", 302)
+		return
+	}
+	//显示文章标题、分类、浏览量、创建时间到index.html中
 	//1、查询
 	o := orm.NewOrm()
 	var articles []models.Article
@@ -112,6 +141,13 @@ func (c *MainController) Index() {
 
 //显示文章创建页
 func (c *MainController) ShowPublish() {
+	//session处理
+	userName := c.GetSession("username")
+	if userName == nil {
+		c.Redirect("/", 302)
+		return
+	}
+
 	artiType, err := models.GetArtiType()
 	if err != nil {
 		beego.Info("类型查找失败！", err)
@@ -122,6 +158,13 @@ func (c *MainController) ShowPublish() {
 }
 //创建文章操作
 func (c *MainController) Publish() {
+	//session处理
+	userName := c.GetSession("username")
+	if userName == nil {
+		c.Redirect("/", 302)
+		return
+	}
+
 	artiname := c.GetString("artiname")
 	content := c.GetString("content")
 	imgname := c.GetString("imgname")
@@ -154,7 +197,6 @@ func (c *MainController) Publish() {
 func (c *MainController) Upload() {
 	timer := time.Now()
 	f, h, err := c.GetFile("uploadImg")
-
 	//1、上传文件时如果文件同名则不再上传
 	//2、如何处理？可以重命名文件名，使用原文件名加时间的组合构造新文件名
 	//3、限定文件格式
@@ -187,18 +229,64 @@ func (c *MainController) Upload() {
 
 //文章内容详情
 func (c *MainController) ShowContent() {
+	//session处理
+	userName := c.GetSession("username")
+	if userName == nil {
+		c.Redirect("/", 302)
+		return
+	}
+
+	o := orm.NewOrm()
+	var articles []models.Article
+	//侧边栏分类显示
+	//1、类别名称显示
 	artiType, err := models.GetArtiType()
 	if err != nil {
 		beego.Info("类型查找失败！", err)
 		return
 	}
+	//2、各种类别数量显示
+	//artiCount, err := o.QueryTable("Article").Filter("ArticleType", artiType).All(&articles)
+	//if err != nil {
+	//	beego.Info("文章类型数量获取失败", err)
+	//	return
+	//}
+	//c.Data["artiCount"] = artiCount
+
+	//文章详情显示
+	artiId, err := c.GetInt("cid")
+	if err != nil {
+		beego.Info("获取文章ID失败", err)
+		return
+	}
+	_, err = o.QueryTable("Article").Filter("Id", artiId).All(&articles)
+	if err != nil {
+		beego.Info("文章内容获取失败！", err)
+		return
+	}
+	//浏览量计数
+	_, err = o.Raw("update article set count=count+1 where Id=?", artiId).Values(&[]orm.Params{})
+	if err != nil {
+		beego.Info("浏览量获取失败", err)
+		return
+	}
+
+	c.Data["articles"] = articles
 	c.Data["artiType"] = artiType
+
 	c.TplName = "content.html"
 }
 
 //文章删除操作
 func (c *MainController) Delete() {
-	id, err := c.GetInt("id")
+	//session处理
+	userName := c.GetSession("username")
+	if userName == nil {
+		c.Redirect("/", 302)
+		return
+	}
+
+	id, err := c.GetInt("id")//前端通过使用url?id=xxx的方式向后端返回id，此处使用c.GetInt("id")的方式获取前端的id值
 	if err != nil {
 		beego.Info("获取文章ID失败", err)
 		return
@@ -209,4 +297,10 @@ func (c *MainController) Delete() {
 		return
 	}
 	beego.Info("文章删除成功！")
+}
+
+//退出登录
+func (c *MainController) Exit() {
+	c.DelSession("username")//删除session
+	c.Redirect("/", 302)
 }
