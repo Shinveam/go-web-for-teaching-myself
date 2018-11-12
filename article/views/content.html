@@ -212,7 +212,7 @@
             {{range .artiType}}
                 <a class="list-group-item" href="#">
                     <p>
-                        <span class="badge" >8</span>{{.TypeName}}
+                        <span class="badge" >{{.Id}}</span>{{.TypeName}}
                     </p>
                 </a>
             {{end}}
@@ -237,6 +237,7 @@
                         <div class="panel-collapse collapse in" id="faq1">
                             <div class="panel-body">
                             {{.Content}}
+                                <div class="panel-body"> <img src="/static/userImg/{{.Img}}"></div>
                             </div>
                         </div>
                     </div>

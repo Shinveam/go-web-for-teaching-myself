@@ -245,13 +245,6 @@ func (c *MainController) ShowContent() {
 		beego.Info("类型查找失败！", err)
 		return
 	}
-	//2、各种类别数量显示
-	//artiCount, err := o.QueryTable("Article").Filter("ArticleType", artiType).All(&articles)
-	//if err != nil {
-	//	beego.Info("文章类型数量获取失败", err)
-	//	return
-	//}
-	//c.Data["artiCount"] = artiCount
 
 	//文章详情显示
 	artiId, err := c.GetInt("cid")
@@ -270,6 +263,38 @@ func (c *MainController) ShowContent() {
 		beego.Info("浏览量获取失败", err)
 		return
 	}
+
+	//2、各种类别数量显示、多对多查询
+	//方法一：（有错误，暂时不可用）
+	//artiCount, err := o.QueryTable("ArticleType").RelatedSel("Article").Filter("TypeName__Article__ArticleType", artiType).All(&articles)
+	//beego.Info("articout-->", artiCount)
+	//if err != nil {
+	//	beego.Info("文章类型数量获取失败", err)
+	//	return
+	//}
+	//c.Data["artiCount"] = artiCount
+	//方法二：原生字符串查询(有错误，暂时不可用)
+	//artiCount, err := o.Raw(
+	//	"select count(*) from article a, article_type t where a.article_type_id = t.id and article_type = ?",
+	//	artiType).Values(&[]orm.Params{})
+	//beego.Info("articout-->", artiCount)
+	//if err != nil {
+	//	beego.Info("文章类型数量获取失败：", err)
+	//	return
+	//}
+	//c.Data["artiCount"] = artiCount
+	//方法三：
+	//arti := models.Article{Id:artiId}
+	//err = o.Read(&arti)
+	//beego.Info("arti-->", arti)
+	//num, err := o.LoadRelated(&arti, "ArticleType")
+	//beego.Info("num-->", num)
+	//if err != nil {
+	//	beego.Info("数量获取错误：", err)
+	//	return
+	//}
+	//c.Data["artiCount"] = num
+
 
 	c.Data["articles"] = articles
 	c.Data["artiType"] = artiType
