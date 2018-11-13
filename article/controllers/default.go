@@ -6,7 +6,6 @@ import (
 	"github.com/astaxie/beego/orm"
 	"math"
 	"path"
-	"reflect"
 	"time"
 )
 
@@ -299,18 +298,21 @@ func (c *MainController) ShowContent() {
 	//方法四：获取文章类型下的文章数量
 	for _, v:= range artiType {
 		//1、获取文章类型的id
-		beego.Info("v.Id-->", v.Id)
-		beego.Info("v.Id.type-->", reflect.TypeOf(v.Id))
+		//beego.Info("v.Id-->", v.Id)
+		//beego.Info("v.Id.type-->", reflect.TypeOf(v.Id))
 		//2、根据文章类型id检索article表的该id的数量
 		var maps []orm.Params
+		//方式1：原生字符串查询
 		_, err := o.Raw("select count(*) from article where article_type_id=?", v.Id).Values(&maps)
+		////方式二：ORM查询
+		//num, err := o.QueryTable("Article").Filter("ArticleType__id", v.Id).RelatedSel().Count()
+		//beego.Info("num-->", num)
 		if err != nil {
 			beego.Info("读取文章类型ID错误：", err)
 			return
 		}
-		for _, t := range maps {
-			beego.Info("maps.t-->", t)
-		}
+		artiCount := maps[0]["count(*)"] //获取文章类型下的数量
+		beego.Info("artiCount-->", artiCount)
 	}
 
 
