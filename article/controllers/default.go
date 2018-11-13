@@ -6,6 +6,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"math"
 	"path"
+	"reflect"
 	"time"
 )
 
@@ -241,6 +242,7 @@ func (c *MainController) ShowContent() {
 	//侧边栏分类显示
 	//1、类别名称显示
 	artiType, err := models.GetArtiType()
+
 	if err != nil {
 		beego.Info("类型查找失败！", err)
 		return
@@ -294,6 +296,22 @@ func (c *MainController) ShowContent() {
 	//	return
 	//}
 	//c.Data["artiCount"] = num
+	//方法四：获取文章类型下的文章数量
+	for _, v:= range artiType {
+		//1、获取文章类型的id
+		beego.Info("v.Id-->", v.Id)
+		beego.Info("v.Id.type-->", reflect.TypeOf(v.Id))
+		//2、根据文章类型id检索article表的该id的数量
+		var maps []orm.Params
+		_, err := o.Raw("select count(*) from article where article_type_id=?", v.Id).Values(&maps)
+		if err != nil {
+			beego.Info("读取文章类型ID错误：", err)
+			return
+		}
+		for _, t := range maps {
+			beego.Info("maps.t-->", t)
+		}
+	}
 
 
 	c.Data["articles"] = articles

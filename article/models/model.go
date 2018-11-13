@@ -26,7 +26,7 @@ type Article struct {
 
 type ArticleType struct {
 	Id       int        `orm:"pk"`
-	TypeName string     `orm:"size(20)"`
+	TypeName string     `orm:"size(20);unique"`
 	Article  []*Article `orm:"reverse(many)"` //与`orm:"rel()"`成对存在，与文章表结合表示一对多类型
 }
 
