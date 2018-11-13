@@ -28,6 +28,7 @@ type ArticleType struct {
 	Id       int        `orm:"pk"`
 	TypeName string     `orm:"size(20);unique"`
 	Article  []*Article `orm:"reverse(many)"` //与`orm:"rel()"`成对存在，与文章表结合表示一对多类型
+	ArticleCount int64
 }
 
 /*一对多关系的会在数据库中建立外键，而多对多关系则会建立一张表*/

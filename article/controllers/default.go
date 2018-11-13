@@ -265,54 +265,26 @@ func (c *MainController) ShowContent() {
 		return
 	}
 
-	//2、各种类别数量显示、多对多查询
-	//方法一：（有错误，暂时不可用）
-	//artiCount, err := o.QueryTable("ArticleType").RelatedSel("Article").Filter("TypeName__Article__ArticleType", artiType).All(&articles)
-	//beego.Info("articout-->", artiCount)
-	//if err != nil {
-	//	beego.Info("文章类型数量获取失败", err)
-	//	return
-	//}
-	//c.Data["artiCount"] = artiCount
-	//方法二：原生字符串查询(有错误，暂时不可用)
-	//artiCount, err := o.Raw(
-	//	"select count(*) from article a, article_type t where a.article_type_id = t.id and article_type = ?",
-	//	artiType).Values(&[]orm.Params{})
-	//beego.Info("articout-->", artiCount)
-	//if err != nil {
-	//	beego.Info("文章类型数量获取失败：", err)
-	//	return
-	//}
-	//c.Data["artiCount"] = artiCount
-	//方法三：
-	//arti := models.Article{Id:artiId}
-	//err = o.Read(&arti)
-	//beego.Info("arti-->", arti)
-	//num, err := o.LoadRelated(&arti, "ArticleType")
-	//beego.Info("num-->", num)
-	//if err != nil {
-	//	beego.Info("数量获取错误：", err)
-	//	return
-	//}
-	//c.Data["artiCount"] = num
-	//方法四：获取文章类型下的文章数量
-	for _, v:= range artiType {
+	//获取文章类型下的文章数量
+	for i, v:= range artiType {
 		//1、获取文章类型的id
 		//beego.Info("v.Id-->", v.Id)
 		//beego.Info("v.Id.type-->", reflect.TypeOf(v.Id))
+
 		//2、根据文章类型id检索article表的该id的数量
-		var maps []orm.Params
 		//方式1：原生字符串查询
-		_, err := o.Raw("select count(*) from article where article_type_id=?", v.Id).Values(&maps)
+		//var maps []orm.Params
+		//_, err := o.Raw("select count(*) from article where article_type_id=?", v.Id).Values(&maps)
+		//beego.Info("count(*)-->",maps[0]["count(*)"])
 		////方式二：ORM查询
-		//num, err := o.QueryTable("Article").Filter("ArticleType__id", v.Id).RelatedSel().Count()
+		num, err := o.QueryTable("Article").Filter("ArticleType__id", v.Id).RelatedSel().Count()
 		//beego.Info("num-->", num)
 		if err != nil {
 			beego.Info("读取文章类型ID错误：", err)
 			return
 		}
-		artiCount := maps[0]["count(*)"] //获取文章类型下的数量
-		beego.Info("artiCount-->", artiCount)
+
+		artiType[i].ArticleCount=num//go特有的：不能通过“v.属性”来修改结构体，但是可以通过“对象[索引]”的方式修改
 	}
 
 
