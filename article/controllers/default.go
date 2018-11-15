@@ -99,11 +99,11 @@ func (c *MainController) Register() {
 //显示主页
 func (c *MainController) Index() {
 	//session处理
-	userName := c.GetSession("username")
-	if userName == nil {
-		c.Redirect("/", 302)
-		return
-	}
+	//userName := c.GetSession("username")
+	//if userName == nil {
+	//	c.Redirect("/", 302)
+	//	return
+	//}
 	//显示文章标题、分类、浏览量、创建时间到index.html中
 	//1、查询
 	o := orm.NewOrm()
@@ -143,11 +143,11 @@ func (c *MainController) Index() {
 //显示文章创建页
 func (c *MainController) ShowPublish() {
 	//session处理
-	userName := c.GetSession("username")
-	if userName == nil {
-		c.Redirect("/", 302)
-		return
-	}
+	//userName := c.GetSession("username")
+	//if userName == nil {
+	//	c.Redirect("/", 302)
+	//	return
+	//}
 
 	artiType, err := models.GetArtiType()
 	if err != nil {
@@ -160,11 +160,11 @@ func (c *MainController) ShowPublish() {
 //创建文章操作
 func (c *MainController) Publish() {
 	//session处理
-	userName := c.GetSession("username")
-	if userName == nil {
-		c.Redirect("/", 302)
-		return
-	}
+	//userName := c.GetSession("username")
+	//if userName == nil {
+	//	c.Redirect("/", 302)
+	//	return
+	//}
 
 	artiname := c.GetString("artiname")
 	content := c.GetString("content")
@@ -193,7 +193,6 @@ func (c *MainController) Publish() {
 
 	c.Ctx.WriteString("success")
 }
-
 //文件上传
 func (c *MainController) Upload() {
 	timer := time.Now()
@@ -231,11 +230,11 @@ func (c *MainController) Upload() {
 //文章内容详情
 func (c *MainController) ShowContent() {
 	//session处理
-	userName := c.GetSession("username")
-	if userName == nil {
-		c.Redirect("/", 302)
-		return
-	}
+	//userName := c.GetSession("username")
+	//if userName == nil {
+	//	c.Redirect("/", 302)
+	//	return
+	//}
 
 	o := orm.NewOrm()
 	var articles []models.Article
@@ -298,11 +297,11 @@ func (c *MainController) ShowContent() {
 //文章删除操作
 func (c *MainController) Delete() {
 	//session处理
-	userName := c.GetSession("username")
-	if userName == nil {
-		c.Redirect("/", 302)
-		return
-	}
+	//userName := c.GetSession("username")
+	//if userName == nil {
+	//	c.Redirect("/", 302)
+	//	return
+	//}
 
 	id, err := c.GetInt("id")//前端通过使用url?id=xxx的方式向后端返回id，此处使用c.GetInt("id")的方式获取前端的id值
 	if err != nil {
@@ -322,8 +321,6 @@ func (c *MainController) Exit() {
 	c.DelSession("username")//删除session
 	c.Redirect("/", 302)
 }
-
-
 
 //显示聊天页面
 func (c *MainController) ShowChat() {
