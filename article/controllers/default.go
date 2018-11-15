@@ -7,6 +7,7 @@ import (
 	"math"
 	"path"
 	"time"
+	"turingAPI/turing"
 )
 
 type MainController struct {
@@ -284,7 +285,7 @@ func (c *MainController) ShowContent() {
 			return
 		}
 
-		artiType[i].ArticleCount=num//go特有的：不能通过“v.属性”来修改结构体，但是可以通过“对象[索引]”的方式修改
+		artiType[i].ArticleCount = num//go特有的：不能通过“v.属性”来修改结构体，但是可以通过“对象[索引]”的方式修改
 	}
 
 
@@ -320,4 +321,30 @@ func (c *MainController) Delete() {
 func (c *MainController) Exit() {
 	c.DelSession("username")//删除session
 	c.Redirect("/", 302)
+}
+
+
+
+//显示聊天页面
+func (c *MainController) ShowChat() {
+	c.TplName = "chat.html"
+}
+//处理聊天内容
+func (c *MainController) Chat() {
+	msg := c.GetString("message")
+	if msg == "" {
+		beego.Info("输入消息为空！")
+		return
+	}
+
+	turingMsg, err := turing.Robots("eb58b64b8cd34a68b3c8fe588ded8191", turing.ReqType(1), msg)
+	if err != nil {
+		beego.Info("图灵机器人解析错误！", err)
+		return
+	}
+
+	c.Ctx.WriteString(msg+"**###**"+turingMsg.(string))
+	//c.Data["turingMsg"] = turingMsg
+	//c.Data["msg"] = msg
+	//c.TplName = "chat.html"
 }

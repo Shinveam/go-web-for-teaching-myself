@@ -16,6 +16,7 @@ func init() {
 	beego.Router("/delete", &controllers.MainController{}, "post:Delete")
 	beego.Router("/upload", &controllers.MainController{}, "post:Upload")
 	beego.Router("/exit", &controllers.MainController{}, "get:Exit")
+	beego.Router("/chat", &controllers.MainController{}, "get:ShowChat;post:Chat")
 }
 //结合路由过滤器，判断有session
 //var FilterFunc = func(ctx *context.Context) {
