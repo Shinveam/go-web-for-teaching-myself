@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 	"time"
@@ -34,7 +35,7 @@ type ArticleType struct {
 /*一对多关系的会在数据库中建立外键，而多对多关系则会建立一张表*/
 
 func init()  {
-	orm.Debug = true//开发环境下建议开启调试
+	//orm.Debug = true//开发环境下建议开启调试
 	orm.RegisterDataBase(
 		"default",
 		"mysql",
@@ -119,4 +120,29 @@ func GetArtiType() (artiType []ArticleType, err error) {
 	}
 
 	return artiType, err
+}
+
+//修改文章
+func ArticleRevise(id int, name string, content string, timer time.Time, img string) (ret int, err error) {
+	o := orm.NewOrm()
+	arti := Article{}
+
+	arti.Id = id
+	err = o.Read(&arti)
+	if err != nil {
+		beego.Info("查无此文章", err)
+		return 0, err
+	}
+	arti.ArtiName = name
+	arti.Content = content
+	arti.Img = img
+	arti.PubTime = timer.Format("2006-01-02 15:04:05")
+
+	_, err = o.Update(&arti)
+	if err != nil {
+		beego.Info("更新失败", err)
+		return 0, err
+	}
+
+	return 1, err
 }

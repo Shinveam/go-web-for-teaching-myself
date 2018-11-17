@@ -171,13 +171,13 @@
               <li class="dropdown user hidden-xs"><a data-toggle="dropdown" class="dropdown-toggle" href="#">
                 <img width="34" height="34" src="/static/images/avatar-male.jpg" />Shinveam<b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                  <li><a href="#">
+                  <li><a href="/article/404">
                     <i class="icon-user"></i>我的帐号</a>
                   </li>
                     <li><a href="/article/chat" target="_blank">
                         <i class="icon-coffee"></i>和我聊天？</a>
                     </li>
-                  <li><a href="#">
+                  <li><a href="/article/404">
                     <i class="icon-gear"></i>设置</a>
                   </li>
                   <li><a href="/article/exit">
@@ -254,8 +254,8 @@
                       <td class="actions">
                         <div class="action-buttons">
                           <a class="table-actions" href="#"><i class="icon-eye-open"></i></a>
-                          <a class="table-actions" href="#"><i class="icon-pencil"></i></a>
                             <input type="hidden" value="{{.Id}}">
+                          <a class="table-actions" href="/article/revise?id={{.Id}}" onclick="revise(this)"><i class="icon-pencil"></i></a>
                           <a class="table-actions" href="javascript:void(0);" onclick="del(this)"><i class="icon-trash"></i></a>
                         </div>
                       </td>
@@ -278,11 +278,7 @@
 
 <script type="text/javascript">
     window.onload = function () {
-        // $("#del").click(function () {
-        //     if (!confirm("确认删除？")) {
-        //         return false;
-        //     }
-        // }) /delete?id={{.Id}}
+        {{.Id}}
     };
 
     function del(a) {
@@ -293,6 +289,7 @@
         $.post("/article/delete?id="+value,{},function(resultData,statu){
             window.location.reload();
         })
+
     }
 </script>
 

@@ -53,7 +53,7 @@ func (c *MainController) Login() {
 	//cookie的处理
 	c.Ctx.SetCookie("username", username, 3600*time.Second)//设置cookie值，一小时后失效
 	remember := c.GetString("remember")
-	beego.Info("remember-->", remember)
+	//beego.Info("remember-->", remember)
 	if remember == "on" {
 		c.Ctx.SetCookie("password", pwd, 3600*time.Second)
 	}else {
@@ -104,8 +104,6 @@ func (c *MainController) Index() {
 	//	c.Redirect("/", 302)
 	//	return
 	//}
-	//显示文章标题、分类、浏览量、创建时间到index.html中
-	//1、查询
 	o := orm.NewOrm()
 	var articles []models.Article
 	qs := o.QueryTable("Article").RelatedSel("ArticleType")//关联ArticleType数据库，可以在多处添加RelatedSel
@@ -142,13 +140,6 @@ func (c *MainController) Index() {
 
 //显示文章创建页
 func (c *MainController) ShowPublish() {
-	//session处理
-	//userName := c.GetSession("username")
-	//if userName == nil {
-	//	c.Redirect("/", 302)
-	//	return
-	//}
-
 	artiType, err := models.GetArtiType()
 	if err != nil {
 		beego.Info("类型查找失败！", err)
@@ -159,13 +150,6 @@ func (c *MainController) ShowPublish() {
 }
 //创建文章操作
 func (c *MainController) Publish() {
-	//session处理
-	//userName := c.GetSession("username")
-	//if userName == nil {
-	//	c.Redirect("/", 302)
-	//	return
-	//}
-
 	artiname := c.GetString("artiname")
 	content := c.GetString("content")
 	imgname := c.GetString("imgname")
@@ -229,13 +213,6 @@ func (c *MainController) Upload() {
 
 //文章内容详情
 func (c *MainController) ShowContent() {
-	//session处理
-	//userName := c.GetSession("username")
-	//if userName == nil {
-	//	c.Redirect("/", 302)
-	//	return
-	//}
-
 	o := orm.NewOrm()
 	var articles []models.Article
 	//侧边栏分类显示
@@ -296,13 +273,6 @@ func (c *MainController) ShowContent() {
 
 //文章删除操作
 func (c *MainController) Delete() {
-	//session处理
-	//userName := c.GetSession("username")
-	//if userName == nil {
-	//	c.Redirect("/", 302)
-	//	return
-	//}
-
 	id, err := c.GetInt("id")//前端通过使用url?id=xxx的方式向后端返回id，此处使用c.GetInt("id")的方式获取前端的id值
 	if err != nil {
 		beego.Info("获取文章ID失败", err)
@@ -344,4 +314,55 @@ func (c *MainController) Chat() {
 	//c.Data["turingMsg"] = turingMsg
 	//c.Data["msg"] = msg
 	//c.TplName = "chat.html"
+}
+
+//显示编辑修改页
+func (c *MainController) ShowRevise() {
+	//1、获取文章ID
+	artiId, err := c.GetInt("id")
+	beego.Info("artiId-->", artiId)
+	if err != nil {
+		beego.Info("文章ID获取失败！", err)
+		return
+	}
+	//2、根据文章ID查询文章标题、类别、内容、图片
+	o := orm.NewOrm()
+	arti := models.Article{Id:artiId}
+	_, err = o.QueryTable("Article").Filter("Id", artiId).RelatedSel("ArticleType").All(&arti)
+	if err != nil {
+		beego.Info("查询文章出错！", err)
+		return
+	}
+
+	c.Data["article"] = arti
+	c.TplName = "revise.html"
+}
+//修改编辑操作
+func (c *MainController) Revise() {
+	artiId, err := c.GetInt("artiId")
+	if err != nil {
+		beego.Info("文章ID获取失败", err)
+		return
+	}
+	artiName := c.GetString("artiname")
+	artiContent := c.GetString("content")
+	artiImg := c.GetString("imgname")
+	newTime := time.Now()
+
+	if artiName == "" || artiContent == "" {
+		beego.Info("非法输入！")
+		return
+	}
+	resp, err := models.ArticleRevise(artiId, artiName, artiContent, newTime, artiImg)
+	if resp == 0 || err != nil {
+		beego.Info("文章修改失败！", err)
+		c.Ctx.WriteString("failed")
+		return
+	}
+	c.Ctx.WriteString("success")
+}
+
+//显示404出错界面
+func (c *MainController) ShowFalse()  {
+	c.TplName = "404-page.html"
 }
