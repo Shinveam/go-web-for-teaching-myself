@@ -203,7 +203,7 @@
 
       <div class="container-fluid main-content"><div class="page-title">
   <h1>
-    创建文章
+    修改文章
   </h1>
 </div>
 
@@ -262,8 +262,9 @@
             <div class="col-md-4">
               <div class="fileupload fileupload-new" data-provides="fileupload">
                 <div class="fileupload-new img-thumbnail" style="width: 200px; height: 150px;">
+                    {{if .article.Img}}
                   <img src="/static/userImg/{{.article.Img}}">
-
+                    {{end}}
                 </div>
                 <div class="fileupload-preview fileupload-exists img-thumbnail" style="width: 200px; max-height: 150px"></div>
                 <div>
@@ -291,7 +292,6 @@
 
 <script>
     function doSubmit(filename, artiId){
-        // alert($("#typeName  option:selected").val());
         $.post("/article/revise",{
             "artiname":$("#artiname").val(),
             "content":$("#content").val(),
@@ -310,7 +310,6 @@
 
     function upload(artiId){
         var formData=new FormData();
-        //formData.append("csrfmiddlewaretoken",csrf);
         formData.append('uploadImg', $("#uploadimg")[0].files[0]);  /*获取上传的图片对象*/
 
         if($('#uploadimg').val().length==0){
@@ -330,18 +329,13 @@
             contentType: false,
             processData: false,
             success: function (args) {
-               //alert(args);  /*服务器端的图片地址*/
                 if(args == "failed"){
-                   // alert("失败")
                     if(!confirm("文件上传失败，是否继续创建文章？")){
                         return;
                     }
                 }
                 filename=args;
                 doSubmit(filename,artiId);
-
-                // $("#avatarPreview").attr('src','/'+args);  /*预览图片*/
-                // $("#avatar").val('/'+args);  /*将服务端的图片url赋值给form表单的隐藏input标签*/
             }});
     }
 </script>

@@ -235,6 +235,9 @@ func (c *MainController) ShowContent() {
 		beego.Info("文章内容获取失败！", err)
 		return
 	}
+	//*获取文章图片
+
+
 	//浏览量计数
 	_, err = o.Raw("update article set count=count+1 where Id=?", artiId).Values(&[]orm.Params{})
 	if err != nil {
@@ -260,7 +263,6 @@ func (c *MainController) ShowContent() {
 			beego.Info("读取文章类型ID错误：", err)
 			return
 		}
-
 		artiType[i].ArticleCount = num//go特有的：不能通过“v.属性”来修改结构体，但是可以通过“对象[索引]”的方式修改
 	}
 

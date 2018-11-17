@@ -240,7 +240,9 @@
                         <div class="panel-collapse collapse in" id="faq1">
                             <div class="panel-body">
                             {{.Content}}
-                                <div class="panel-body"> <img src="/static/userImg/{{.Img}}"></div>
+                            {{if .Img}}
+                                <div class="panel-body"><img src="/static/userImg/{{.Img}}"></div>
+                            {{end}}
                             </div>
                         </div>
                     </div>
