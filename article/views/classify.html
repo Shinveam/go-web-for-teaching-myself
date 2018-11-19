@@ -2,7 +2,7 @@
   
 <head>
     <title>
-      文章详情
+      分类阅读
     </title>
 
     <link href="http://fonts.googleapis.com/css?family=Lato:100,300,400,700" media="all" rel="stylesheet" type="text/css" />
@@ -204,7 +204,7 @@
       <div class="container-fluid main-content">
         <div class="page-title">
           <h1>
-            阅读
+            分类
           </h1>
         </div>
         <div class="row">
@@ -232,12 +232,12 @@
                     <div class="panel">
                         <div class="panel-heading">
                             <div class="panel-title">
-                                <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#faq1">
+                                <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#{{.Id}}">
                                     <div class="caret pull-right"></div>
                                 {{.ArtiName}}</a>
                             </div>
                         </div>
-                        <div class="panel-collapse collapse in" id="faq1">
+                        <div class="panel-collapse collapse " id="{{.Id}}">
                             <div class="panel-body">
                             {{.Content}}
                             {{if .Img}}

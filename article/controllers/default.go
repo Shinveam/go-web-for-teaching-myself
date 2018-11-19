@@ -6,6 +6,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"math"
 	"path"
+	"strconv"
 	"time"
 	"turingAPI/turing"
 )
@@ -32,8 +33,8 @@ func (c *MainController) ShowLogin() {
 func (c *MainController) Login() {
 	username := c.GetString("username")
 	pwd := c.GetString("password")
-	beego.Info(username, pwd)
 
+	//beego.Info(username, pwd)
 	if username == "" || pwd == "" {
 		beego.Info("用户没有输入")
 		return
@@ -41,7 +42,7 @@ func (c *MainController) Login() {
 
 	resp, err := models.SearchUser(username, pwd)
 	if err != nil {
-		beego.Info("查找失败")
+		beego.Info("查找失败：", err)
 		return
 	}
 	if resp == nil {
@@ -49,7 +50,7 @@ func (c *MainController) Login() {
 		c.Ctx.WriteString("failed")
 		return
 	}
-	beego.Info("登录成功")
+	beego.Info("登录成功-->", username)
 	//cookie的处理
 	c.Ctx.SetCookie("username", username, 3600*time.Second)//设置cookie值，一小时后失效
 	remember := c.GetString("remember")
@@ -83,7 +84,7 @@ func (c *MainController) Register() {
 
 	num, err := models.RegisterUser(username, pwd)
 	if err != nil {
-		beego.Info("注册失败")
+		beego.Info("注册失败：", err)
 		c.Ctx.WriteString("failed")
 		return
 	}
@@ -110,27 +111,42 @@ func (c *MainController) Index() {
 	//qs.All(&articles)//select * from article
 
 	count, err := qs.Count() //查询条目数
+	if err != nil {
+		beego.Info("查询出错：", err)
+		return
+	}
 	pageSize := 10//设置每页的条目数
 
+	//首页、上一页、下一页和末页的处理
 	/*
 	pageIndex可以通过在前端使用/url?pageIndex=xxx的方式向后端传递
 	后端的接受则使用pageIndex := c.GetString("pageIndex")获取
 	将pageIndex转成整型，pageIndex, err := Strconv.Atoi(pageIndex)//首页的显示：if err != nil {pageIndex = 1}
 	上行的pageIndex在上上一行已经使用，这里只是作为提醒，与下行代码匹配
 	*/
-	pageIndex := 1//首页,由于前端的模板中暂时无法找到对应的首页（或上一页、下一页和末页）标签，故此处先使用1作为首页
+	pageIndexRaw := c.GetString("page")//获取页码
+	pageIndex, err := strconv.Atoi(pageIndexRaw)
+	if err != nil {
+		pageIndex = 1 //首页
+	}
 	start := pageSize*(pageIndex-1)//起始位置
 	qs.Limit(pageSize, start).All(&articles)//Limit()用于求每页的数据，第一个参数是每页显示多少条，第二个参数是起始位置
 
 	pageCount1 := float64(count)/float64(pageSize) //页码总数
 	pageCount := math.Ceil(pageCount1)//向上取整，如3/2=1.5，那么通过该函数，3/2=2；math.floor(···)向下取整
-
-	if err != nil {
-		beego.Info("查询出错：", err)
-		return
+	//处理上下一页超出范围的问题
+	FirstPage := false//设置首页标记
+	if pageIndex == 1 {
+		FirstPage = true //当pageIndex为首页时，标价为true
 	}
-	c.Data["articles"] = articles
+	LastPage := false//设置末页标记
+	if pageIndex == int(pageCount) {
+		LastPage = true//当pageIndex为末页时，标价为true
+	}
 
+	c.Data["FirstPage"] = FirstPage
+	c.Data["LastPage"] = LastPage
+	c.Data["articles"] = articles
 	c.Data["count"] = count
 	c.Data["pageCount"] = pageCount
 	c.Data["pageIndex"] = pageIndex
@@ -142,7 +158,7 @@ func (c *MainController) Index() {
 func (c *MainController) ShowPublish() {
 	artiType, err := models.GetArtiType()
 	if err != nil {
-		beego.Info("类型查找失败！", err)
+		beego.Info("类型查找失败：", err)
 		return
 	}
 	c.Data["ArtiType"] = artiType
@@ -156,9 +172,9 @@ func (c *MainController) Publish() {
 	timer := time.Now()
 
 	typeId, err := c.GetInt("typeId")
-	beego.Info("TypeId:", typeId)
+	//beego.Info("TypeId:", typeId)
 	if err != nil {
-		beego.Info("下拉类型获取失败!")
+		beego.Info("下拉类型获取失败：", err)
 		return
 	}
 	var artiType models.ArticleType
@@ -170,7 +186,7 @@ func (c *MainController) Publish() {
 	}
 	resp, err := models.CreatArticle(artiname, content, timer, imgname, artiType)
 	if err != nil || resp == 0 {
-		beego.Info("文章创建失败！", err)
+		beego.Info("文章创建失败：", err)
 		c.Ctx.WriteString("failed")
 		return
 	}
@@ -199,12 +215,12 @@ func (c *MainController) Upload() {
 	beego.Info(filename)
 	defer f.Close()
 	if err != nil {
-		beego.Info("文件上传失败！")
+		beego.Info("文件上传失败：", err)
 		return
 	}else {
 		err := c.SaveToFile("uploadImg", "./static/userImg/"+filename)//路径前必须加“.”，否则无法识别
 		if err != nil {
-			beego.Info(err)
+			beego.Info("文件保存失败：", err)
 			c.Ctx.WriteString("failed")
 		}
 		c.Ctx.WriteString(filename)
@@ -220,19 +236,19 @@ func (c *MainController) ShowContent() {
 	artiType, err := models.GetArtiType()
 
 	if err != nil {
-		beego.Info("类型查找失败！", err)
+		beego.Info("类型查找失败：", err)
 		return
 	}
 
 	//文章详情显示
 	artiId, err := c.GetInt("cid")
 	if err != nil {
-		beego.Info("获取文章ID失败", err)
+		beego.Info("获取文章ID失败：", err)
 		return
 	}
 	_, err = o.QueryTable("Article").Filter("Id", artiId).All(&articles)
 	if err != nil {
-		beego.Info("文章内容获取失败！", err)
+		beego.Info("文章内容获取失败：", err)
 		return
 	}
 	//*获取文章图片
@@ -241,7 +257,7 @@ func (c *MainController) ShowContent() {
 	//浏览量计数
 	_, err = o.Raw("update article set count=count+1 where Id=?", artiId).Values(&[]orm.Params{})
 	if err != nil {
-		beego.Info("浏览量获取失败", err)
+		beego.Info("浏览量获取失败：", err)
 		return
 	}
 
@@ -277,12 +293,12 @@ func (c *MainController) ShowContent() {
 func (c *MainController) Delete() {
 	id, err := c.GetInt("id")//前端通过使用url?id=xxx的方式向后端返回id，此处使用c.GetInt("id")的方式获取前端的id值
 	if err != nil {
-		beego.Info("获取文章ID失败", err)
+		beego.Info("获取文章ID失败：", err)
 		return
 	}
 	err = models.DeleteArticle(id)
 	if err != nil {
-		beego.Info("文章删除失败", err)
+		beego.Info("文章删除失败：", err)
 		return
 	}
 	beego.Info("文章删除成功！")
@@ -308,23 +324,20 @@ func (c *MainController) Chat() {
 
 	turingMsg, err := turing.Robots("eb58b64b8cd34a68b3c8fe588ded8191", turing.ReqType(1), msg)
 	if err != nil {
-		beego.Info("图灵机器人解析错误！", err)
+		beego.Info("图灵机器人解析错误：", err)
 		return
 	}
 
 	c.Ctx.WriteString(msg+"**###**"+turingMsg.(string))
-	//c.Data["turingMsg"] = turingMsg
-	//c.Data["msg"] = msg
-	//c.TplName = "chat.html"
 }
 
 //显示编辑修改页
 func (c *MainController) ShowRevise() {
 	//1、获取文章ID
-	artiId, err := c.GetInt("id")
-	beego.Info("artiId-->", artiId)
+	artiId, err := c.GetInt("rid")
+	//beego.Info("artiId-->", artiId)
 	if err != nil {
-		beego.Info("文章ID获取失败！", err)
+		beego.Info("文章ID获取失败：", err)
 		return
 	}
 	//2、根据文章ID查询文章标题、类别、内容、图片
@@ -332,7 +345,7 @@ func (c *MainController) ShowRevise() {
 	arti := models.Article{Id:artiId}
 	_, err = o.QueryTable("Article").Filter("Id", artiId).RelatedSel("ArticleType").All(&arti)
 	if err != nil {
-		beego.Info("查询文章出错！", err)
+		beego.Info("查询文章出错：", err)
 		return
 	}
 
@@ -343,7 +356,7 @@ func (c *MainController) ShowRevise() {
 func (c *MainController) Revise() {
 	artiId, err := c.GetInt("artiId")
 	if err != nil {
-		beego.Info("文章ID获取失败", err)
+		beego.Info("文章ID获取失败：", err)
 		return
 	}
 	artiName := c.GetString("artiname")
@@ -357,11 +370,47 @@ func (c *MainController) Revise() {
 	}
 	resp, err := models.ArticleRevise(artiId, artiName, artiContent, newTime, artiImg)
 	if resp == 0 || err != nil {
-		beego.Info("文章修改失败！", err)
+		beego.Info("文章修改失败：", err)
 		c.Ctx.WriteString("failed")
 		return
 	}
 	c.Ctx.WriteString("success")
+}
+
+//分类文章显示
+func (c *MainController) ShowClassify() {
+	o := orm.NewOrm()
+	//1、显示侧边分类
+	artiType, err := models.GetArtiType()
+	if err != nil {
+		beego.Info("类型查找失败：", err)
+		return
+	}
+	//2、获取分类Id
+	typeId, err := c.GetInt("tid")
+	if err != nil {
+		beego.Info("分类ID获取失败：", err)
+		return
+	}
+	//3、根据分类Id查询该类下的文章
+	article, err := models.GetTypeArti(typeId)
+	if err != nil || article == nil {
+		beego.Info("分类文章获取失败：", err)
+		return
+	}
+	//在分类下显示该类数量
+	for i, v:= range artiType {
+		num, err := o.QueryTable("Article").Filter("ArticleType__id", v.Id).RelatedSel().Count()
+		if err != nil {
+			beego.Info("读取文章类型ID错误：", err)
+			return
+		}
+		artiType[i].ArticleCount = num//go特有的：不能通过“v.属性”来修改结构体，但是可以通过“对象[索引]”的方式修改
+	}
+	//4、将查询到的文章发送至前端
+	c.Data["articles"] = article
+	c.Data["artiType"] = artiType
+	c.TplName = "classify.html"
 }
 
 //显示404出错界面

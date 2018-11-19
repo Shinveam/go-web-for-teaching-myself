@@ -146,3 +146,14 @@ func ArticleRevise(id int, name string, content string, timer time.Time, img str
 
 	return 1, err
 }
+
+//获取某类别下的所有文章
+func GetTypeArti(typeId int) (arti []Article, err error) {
+	o := orm.NewOrm()
+	_, err = o.QueryTable("Article").Filter("ArticleType__Id", typeId).RelatedSel().All(&arti)
+	if err != nil {
+		beego.Info("查询分类文章出错！", err)
+		return nil, err
+	}
+	return arti, err
+}
