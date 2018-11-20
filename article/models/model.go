@@ -4,6 +4,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
+	"os"
 	"time"
 )
 
@@ -100,11 +101,18 @@ func CreatArticle(artiname string, content string, timer time.Time, img string, 
 func DeleteArticle(id int) (err error) {
 	o := orm.NewOrm()
 	arti := Article{Id:id}
-	err = o.Read(&arti)
+	err = o.Read(&arti)//查询文章是否存在
 	if err != nil {
 		return err
 	}
-	_, err = o.Delete(&arti)
+
+	filePath := "E:/GoFiles/src/article/static/userImg/" + arti.Img //删除文件时需要全路径，根据使用情况自行修改
+	err = os.Remove(filePath)//删除文件（该案例的文件为图片）
+	if err != nil {
+		return err
+	}
+
+	_, err = o.Delete(&arti)//删除文章
 	if err != nil {
 		return err
 	}

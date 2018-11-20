@@ -413,6 +413,28 @@ func (c *MainController) ShowClassify() {
 	c.TplName = "classify.html"
 }
 
+//图片欣赏页展示
+func (c *MainController) Gallery() {
+	o := orm.NewOrm()
+	arti := []models.Article{}
+	//SQL查询：select * from article where img is not null and img!=""
+	_, err := o.QueryTable("Article").Filter("Img__isnull", false).Exclude("Img__exact", "").All(&arti)
+	if err != nil {
+		beego.Info("图片获取失败：", err)
+		return
+	}
+
+	c.Data["ArtiImg"] = arti
+	c.TplName = "gallery.html"
+}
+
+//文件下载
+func (c *MainController) Download() {
+	img := c.GetString("picId")
+	imgPath := "E:/GoFiles/src/article/static/userImg/" + img
+	c.Ctx.Output.Download(imgPath, img)//第一个参数为下载文件的全路径，第二个参数是保存的文件名（可选）
+}
+
 //显示404出错界面
 func (c *MainController) ShowFalse()  {
 	c.TplName = "404-page.html"

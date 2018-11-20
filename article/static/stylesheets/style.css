@@ -1414,7 +1414,7 @@ th:active {
   height: 150px;
   margin: 10px;
   position: relative;
-  background: black; }
+  background: white; }
   .gallery-item img {
     width: 100%;
     -webkit-transition: opacity 0.3s;

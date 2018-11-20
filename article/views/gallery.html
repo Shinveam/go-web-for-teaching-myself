@@ -3,7 +3,7 @@
   
 <head>
     <title>
-      创建并发布
+      图片欣赏
     </title>
 
     <link href="http://fonts.googleapis.com/css?family=Lato:100,300,400,700" media="all" rel="stylesheet" type="text/css" />
@@ -76,8 +76,8 @@
   </head>
   <body style="padding-top: 68px">
     <div class="modal-shiftfix">
-
       <!-- Navigation -->
+
         <div class="navbar navbar-fixed-top scroll-hide" style="height: auto;">
             <div class="container-fluid top-bar">
                 <div class="pull-right">
@@ -199,157 +199,72 @@
                 </form>
             </div>
         </div>
+
       <!-- End Navigation -->
+      <div class="container-fluid main-content">
+        <div class="page-title">
+          <h1>
+            图片欣赏
+          </h1>
+        </div>
 
-      <div class="container-fluid main-content"><div class="page-title">
-  <h1>
-    创建文章
-  </h1>
-</div>
+        <div class="row">
+          <!-- Gallery with filtering and actions -->
+          <div class="col-lg-6">
+            <div class="widget-container fluid-height">
+              <div class="heading">
+                <i class="icon-th-large"></i>Article Pictures
+                  <div class="gallery-filters list-inline btn-group pull-right">
+                      <a class="btn btn-sm btn-primary-outline selected" data-filter="*" href="#">所有</a>
+                      <a class="btn btn-sm btn-primary-outline" data-filter=".filter1" href="#">方式 1</a>
+                      <a class="btn btn-sm btn-primary-outline" data-filter=".filter2" href="#">方式 2</a>
+                  </div>
+              </div>
+              <div class="widget-content padded">
+                <div class="gallery-container">
 
-<div class="row">
-  <div class="col-lg-12">
-    <div class="widget-container fluid-height clearfix">
-      <div class="heading">
-        <i class="icon-reorder"></i>文章编辑
-      </div>
-      <div class="widget-content padded">
-        <form onsubmit="return false" class="form-horizontal">
-          <div class="form-group">
-            <label class="control-label col-md-2">标题</label>
-            <div class="col-md-7">
-              <input class="form-control" placeholder="输入文章标题" type="text" name="artiname" id="artiname">
-            </div>
-          </div>
-         <div class="form-group">
-            <label class="control-label col-md-2">分类</label>
-            <div class="col-md-7">
-              <select class="form-control"  id="typeName">
+                {{range .ArtiImg}}
+                    <a class="gallery-item filter1 fancybox" href="/static/userImg/{{.Img}}" rel="gallery1" title={{.ArtiName}}>
+                        <img src="/static/userImg/{{.Img}}" />
+                        <div class="actions">
+                            <i class="icon-trash"></i>
+                            <i class="icon-zoom-in" ></i>
+                            <i class="icon-save" onclick="SaveFile({{.Img}})"></i>
+                        </div>
+                    </a>
+                {{end}}
 
-              {{range .ArtiType}}
-                  <option value="{{.Id}}">{{.TypeName}}</option>
-              {{end}}
-
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="control-label col-md-2">正文</label>
-            <div class="col-md-7">
-              <textarea class="form-control" placeholder="文章内容" rows="8" name="content" id="content"></textarea>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="control-label col-md-2">是否发布</label>
-            <div class="col-md-7">
-              <button onclick="upload()" class="btn btn-primary" type="submit">发布</button><button class="btn btn-default-outline">取消</button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-md-12">
-    <div class="widget-container">
-      <div class="heading">
-        <i class="icon-cloud-upload"></i>上传图片
-      </div>
-
-      <div class="widget-content padded">
-        <form onsubmit="return false" class="form-horizontal" enctype="multipart/form-data" method="post">
-          <div class="form-group">
-            <label class="control-label col-md-2">预览</label>
-            <div class="col-md-4">
-              <div class="fileupload fileupload-new" data-provides="fileupload">
-                <div class="fileupload-new img-thumbnail" style="width: 200px; height: 150px;">
-                  <img src="http://www.placehold.it/200x150/EFEFEF/AAAAAA&amp;text=no+image">
-
-                </div>
-                <div class="fileupload-preview fileupload-exists img-thumbnail" style="width: 200px; max-height: 150px"></div>
-                <div>
-                  <span class="btn btn-default btn-file">
-                      <span class="fileupload-new">选择图片</span>
-                      <span class="fileupload-exists">更改</span>
-                      <input type="file" name="uploadImg" id="uploadimg">
-                  </span>
-                    <a class="btn btn-default fileupload-exists" data-dismiss="fileupload" href="#">移除</a>
-                  <!--  <input type="submit" value="提交" onclick="upload()" >  -->
                 </div>
               </div>
             </div>
           </div>
-        </form>
-      </div>
+          <!-- End Gallery with filtering and actions --><!-- Gallery carousel -->
 
-    </div>
-  </div>
-</div>
-
+        </div>
       </div>
     </div>
   </body>
 
 <script>
-    function doSubmit(filename){
-        // alert($("#typeName  option:selected").val());
-        $.post("/article/publish",{
-            "artiname":$("#artiname").val(),
-            "content":$("#content").val(),
-            "typeId":$("#typeName  option:selected").val(),
-
-            "imgname":filename
-        },function(resultData,statu){
-            if(resultData=="failed"){
-                alert("文章创建失败！");
-            }else if(resultData=="success"){
-                alert("创建成功");
-                window.location.href="/article/index";
-            }
-        })
-
+    function SaveFile(picId) {
+        window.open("/article/download?picId=" + picId)
     }
-
-    function upload(){
-        var formData=new FormData();
-        //formData.append("csrfmiddlewaretoken",csrf);
-        formData.append('uploadImg', $("#uploadimg")[0].files[0]);  /*获取上传的图片对象*/
-
-        if($('#uploadimg').val().length==0){
-            if(!confirm("未选择文件，是否确认创建文章？")){
-                return;
-            }else{
-                doSubmit("");
-                return;
-            }
-        }
-
-        var filename="";
-        $.ajax({
-            url: '/article/upload',
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function (args) {
-               //alert(args);  /*服务器端的图片地址*/
-                if(args == "failed"){
-                   // alert("失败")
-                    if(!confirm("文件上传失败，是否继续创建文章？")){
-                        return;
-                    }
-                }
-                filename=args;
-                doSubmit(filename);
-
-                // $("#avatarPreview").attr('src','/'+args);  /*预览图片*/
-                // $("#avatar").val('/'+args);  /*将服务端的图片url赋值给form表单的隐藏input标签*/
-            }});
-    }
+    // $(function(){
+    //     // 为内层div绑定click事件
+    //     // $("#icon1").click(function(event){
+    //     //     //alert("我是小div");
+    //     //     event.stopPropagation();    //  阻止事件冒泡
+    //     // });
+    //     // // 为外层div元素绑定click事件
+    //     // $("#content").click(function(event){
+    //     //     alert("我是大div");
+    //     //     event.stopPropagation();    //  阻止事件冒泡
+    //     // });
+    //     // // 为body元素绑定click事件
+    //     // $("body").click(function(event){
+    //     //     alert("我是body");
+    //     //     event.stopPropagation();    //  阻止事件冒泡
+    //     // });
+    // });
 </script>
-
-
 </html>

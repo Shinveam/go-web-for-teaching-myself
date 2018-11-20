@@ -19,7 +19,9 @@ func init() {
 	beego.Router("/article/exit", &controllers.MainController{}, "get:Exit")//退出
 	beego.Router("/article/chat", &controllers.MainController{}, "get:ShowChat;post:Chat")//聊天
 	beego.Router("/article/revise", &controllers.MainController{}, "get:ShowRevise;post:Revise")//文章修改
-	beego.Router("/article/classify", &controllers.MainController{}, "get:ShowClassify")
+	beego.Router("/article/classify", &controllers.MainController{}, "get:ShowClassify")//分类文章显示
+	beego.Router("/article/gallery", &controllers.MainController{}, "get:Gallery")//画廊
+	beego.Router("/article/download", &controllers.MainController{}, "get:Download")//文件下载
 	beego.Router("/article/404", &controllers.MainController{}, "*:ShowFalse")//*代表无论使用何种方式，都访问ShowFalse函数
 }
 
