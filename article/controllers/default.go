@@ -322,7 +322,7 @@ func (c *MainController) Chat() {
 		return
 	}
 
-	turingMsg, err := turing.Robots("eb58b64b8cd34a68b3c8fe588ded8191", turing.ReqType(1), msg)
+	turingMsg, err := turing.Robots("your turing apikey", turing.ReqType(1), msg)
 	if err != nil {
 		beego.Info("图灵机器人解析错误：", err)
 		return
