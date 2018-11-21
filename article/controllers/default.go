@@ -431,7 +431,12 @@ func (c *MainController) Gallery() {
 //文件下载
 func (c *MainController) Download() {
 	img := c.GetString("picId")
-	imgPath := "E:/GoFiles/src/article/static/userImg/" + img
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))//获取项目路径
+	if err != nil {
+		beego.Info("项目路径获取失败：", err)
+		return
+	}
+	imgPath := dir + "/static/userImg/" + img
 	c.Ctx.Output.Download(imgPath, img)//第一个参数为下载文件的全路径，第二个参数是保存的文件名（可选）
 }
 
